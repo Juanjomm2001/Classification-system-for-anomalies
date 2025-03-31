@@ -1,0 +1,24 @@
+{
+    "image_size": [
+        224,
+        224
+    ],
+    "batch_size": 32,
+    "train_samples": 2372,
+    "validation_samples": 594,
+    "steps_per_epoch": 74,
+    "validation_steps": 18,
+    "class_indices": {
+        "anomaly": 0,
+        "normal": 1
+    },
+    "data_augmentation": {
+        "rotation_range": 20,
+        "width_shift_range": 0.1,
+        "height_shift_range": 0.1,
+        "shear_range": 0.2,
+        "zoom_range": 0.2,
+        "horizontal_flip": true,
+        "fill_mode": "nearest"
+    }
+}
