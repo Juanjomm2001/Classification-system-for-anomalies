@@ -1,6 +1,6 @@
 # Ignorar archivos de configuración de entorno
-project3_claud/data/
-project3_claud/models/
+data/
+models/
 
 # Archivos comunes de Python para ignorar
 __pycache__/
