@@ -1,4 +1,4 @@
-# 2. Preprocesamiento de Datos
+# 2. Preprocesamiento de Datos () FAKE, este hace el resize y todo y te guarda las iamgenes, no renta mucho
 # =============================================
 
 
@@ -32,119 +32,119 @@ for directory in [PROCESSED_DIR, TRAIN_DIR, VALIDATION_DIR]:
     os.makedirs(os.path.join(directory, 'normal'), exist_ok=True)
     os.makedirs(os.path.join(directory, 'anomaly'), exist_ok=True)
 
-# # 2.1 Preprocesamiento de Imágenes
-# # ---------------------------------------------
+# 2.1 Preprocesamiento de Imágenes
+# ---------------------------------------------
 
-# def preprocess_images(input_dir, output_dir, target_size=(224, 224), normalize=True):   # Le pasas el directorio de entrada, el directorio de salida, el tamaño de la imagen y si normalizar o no
-#     """
-#     Preprocesa imágenes: redimensiona y normaliza opcionalmente.
+def preprocess_images(input_dir, output_dir, target_size=(224, 224), normalize=True):   # Le pasas el directorio de entrada, el directorio de salida, el tamaño de la imagen y si normalizar o no
+    """
+    Preprocesa imágenes: redimensiona y normaliza opcionalmente.
     
-#     Args:
-#         input_dir: Directorio con imágenes originales
-#         output_dir: Directorio para guardar imágenes procesadas
-#         target_size: Tamaño objetivo (ancho, alto)
-#         normalize: Si es True, normaliza los valores de píxeles a [0,1]´
+    Args:
+        input_dir: Directorio con imágenes originales
+        output_dir: Directorio para guardar imágenes procesadas
+        target_size: Tamaño objetivo (ancho, alto)
+        normalize: Si es True, normaliza los valores de píxeles a [0,1]´
 
 
-#     Requisito de las arquitecturas de redes neuronales: Las redes neuronales convolucionales como 
-#     EfficientNet, ResNet o MobileNet están diseñadas para recibir imágenes de un tamaño específico como entrada.
-#         EfficientNetB0: 224x224
-#         MobileNetV2: 224x224
-#         ResNet50: 224x224
-#         InceptionV3: 299x299
-#     """
-#     os.makedirs(output_dir, exist_ok=True)
+    Requisito de las arquitecturas de redes neuronales: Las redes neuronales convolucionales como 
+    EfficientNet, ResNet o MobileNet están diseñadas para recibir imágenes de un tamaño específico como entrada.
+        EfficientNetB0: 224x224
+        MobileNetV2: 224x224
+        ResNet50: 224x224
+        InceptionV3: 299x299
+    """
+    os.makedirs(output_dir, exist_ok=True)
     
-#     # Obtener todas las imágenes
-#     image_paths = glob.glob(os.path.join(input_dir, '*.jpg')) + \
-#                  glob.glob(os.path.join(input_dir, '*.png'))
+    # Obtener todas las imágenes
+    image_paths = glob.glob(os.path.join(input_dir, '*.jpg')) + \
+                 glob.glob(os.path.join(input_dir, '*.png'))
     
-#     print(f"Procesando {len(image_paths)} imágenes de {input_dir}...")
+    print(f"Procesando {len(image_paths)} imágenes de {input_dir}...")
     
-#     for img_path in tqdm(image_paths): #esto es para crear como un abarra de carga en el terminal
-#         try:
-#             # Cargar imagen
-#             img = cv2.imread(img_path)
-#             if img is None:
-#                 print(f"Error al cargar la imagen {img_path}. Omitiendo.")
-#                 continue
+    for img_path in tqdm(image_paths): #esto es para crear como un abarra de carga en el terminal
+        try:
+            # Cargar imagen
+            img = cv2.imread(img_path)
+            if img is None:
+                print(f"Error al cargar la imagen {img_path}. Omitiendo.")
+                continue
 
-#             # Redimensionar
-#             img_resized = cv2.resize(img, target_size, interpolation=cv2.INTER_AREA)
+            # Redimensionar
+            img_resized = cv2.resize(img, target_size, interpolation=cv2.INTER_AREA)
             
-#             # Normalizar si es necesario
-#             if normalize:
-#                 img_resized = img_resized.astype(np.float32) / 255.0
-#                 img_resized = (img_resized * 255).astype(np.uint8)  # Reconvertir a uint8 para guardar
+            # Normalizar si es necesario SI ES FALSE NO LO HACE 
+            if normalize:
+                img_resized = img_resized.astype(np.float32) / 255.0
+                img_resized = (img_resized * 255).astype(np.uint8)  # Reconvertir a uint8 para guardar
             
-#             # Guardar imagen procesada
-#             output_path = os.path.join(output_dir, os.path.basename(img_path))
-#             cv2.imwrite(output_path, img_resized)
+            # Guardar imagen procesada
+            output_path = os.path.join(output_dir, os.path.basename(img_path))
+            cv2.imwrite(output_path, img_resized)
             
-#         except Exception as e:
-#             print(f"Error al procesar {img_path}: {e}")
+        except Exception as e:
+            print(f"Error al procesar {img_path}: {e}")
 
-# # Procesar imágenes normales y con anomalías
-# preprocess_images(os.path.join(RAW_DATA_DIR, 'normal'), 
-#                  os.path.join(PROCESSED_DIR, 'normal'))
+# Procesar imágenes normales y con anomalías
+preprocess_images(os.path.join(RAW_DATA_DIR, 'normal'), 
+                 os.path.join(PROCESSED_DIR, 'normal'), target_size=(224, 224), normalize=False)
 
-# preprocess_images(os.path.join(RAW_DATA_DIR, 'anomaly'), 
-#                  os.path.join(PROCESSED_DIR, 'anomaly'))
+preprocess_images(os.path.join(RAW_DATA_DIR, 'anomaly'), 
+                 os.path.join(PROCESSED_DIR, 'anomaly'), target_size=(224, 224), normalize=False)
 
-# def check_processed_image_sizes(processed_dir):
-#     image_paths = glob.glob(os.path.join(processed_dir, '*.jpg')) + \
-#                  glob.glob(os.path.join(processed_dir, '*.png'))
+def check_processed_image_sizes(processed_dir):
+    image_paths = glob.glob(os.path.join(processed_dir, '*.jpg')) + \
+                 glob.glob(os.path.join(processed_dir, '*.png'))
     
-#     # Cargar imágenes para verificar el tamaño
-#     img = cv2.imread(image_paths[0])   
-#     # height, width = img.shape[:2]
-#     # print(f"Tamaño de las imágenes: {width}x{height} píxeles")
-#     print("Tamaño de las imágenes:píxeles"+ str(img.shape))
+    # Cargar imágenes para verificar el tamaño
+    img = cv2.imread(image_paths[0])   
+    # height, width = img.shape[:2]
+    # print(f"Tamaño de las imágenes: {width}x{height} píxeles")
+    print("Tamaño de las imágenes:píxeles"+ str(img.shape))
 
-# # Verificar el tamaño de las imágenes procesadas
-# check_processed_image_sizes(os.path.join(PROCESSED_DIR, 'normal'))
-# check_processed_image_sizes(os.path.join(PROCESSED_DIR, 'anomaly'))
+# Verificar el tamaño de las imágenes procesadas
+check_processed_image_sizes(os.path.join(PROCESSED_DIR, 'normal'))
+check_processed_image_sizes(os.path.join(PROCESSED_DIR, 'anomaly'))
 
 
-# # 2.2 División en conjuntos de entrenamiento y validación
-# # ---------------------------------------------
+# 2.2 División en conjuntos de entrenamiento y validación
+# ---------------------------------------------
 
-# def split_dataset(processed_dir, train_dir, val_dir, split_ratio=0.2):  #esto signinfica que el 0.2 es el 20% de las imágenes que se usan para validación
-#     """
-#     Divide el conjunto de datos en entrenamiento y validación.
+def split_dataset(processed_dir, train_dir, val_dir, split_ratio=0.2):  #esto signinfica que el 0.2 es el 20% de las imágenes que se usan para validación
+    """
+    Divide el conjunto de datos en entrenamiento y validación.
     
-#     Args:
-#         processed_dir: Directorio con imágenes procesadas
-#         train_dir: Directorio para el conjunto de entrenamiento
-#         val_dir: Directorio para el conjunto de validación
-#         split_ratio: Proporción del conjunto de validación
-#     """
-#     # Procesar cada categoría (normal y anomalía)
-#     for category in ['normal', 'anomaly']:
-#         # Obtener  la ruta de las imágenes de la categoría
-#         image_paths = glob.glob(os.path.join(processed_dir, category, '*.jpg')) + \
-#                      glob.glob(os.path.join(processed_dir, category, '*.png'))
-#         #print(image_paths)
-#         # Dividir en entrenamiento y validación
-#         train_paths, val_paths = train_test_split(   #esto ya existe la funcion esta 
-#             image_paths, test_size=split_ratio, random_state=42
-#         )
+    Args:
+        processed_dir: Directorio con imágenes procesadas
+        train_dir: Directorio para el conjunto de entrenamiento
+        val_dir: Directorio para el conjunto de validación
+        split_ratio: Proporción del conjunto de validación
+    """
+    # Procesar cada categoría (normal y anomalía)
+    for category in ['normal', 'anomaly']:
+        # Obtener  la ruta de las imágenes de la categoría
+        image_paths = glob.glob(os.path.join(processed_dir, category, '*.jpg')) + \
+                     glob.glob(os.path.join(processed_dir, category, '*.png'))
+        #print(image_paths)
+        # Dividir en entrenamiento y validación
+        train_paths, val_paths = train_test_split(   #esto ya existe la funcion esta 
+            image_paths, test_size=split_ratio, random_state=42
+        )
         
-#         print(f"Categoría {category}:")
-#         print(f"  - Imágenes de entrenamiento: {len(train_paths)}")
-#         print(f"  - Imágenes de validación: {len(val_paths)}")
+        print(f"Categoría {category}:")
+        print(f"  - Imágenes de entrenamiento: {len(train_paths)}")
+        print(f"  - Imágenes de validación: {len(val_paths)}")
         
-#         # Copiar imágenes a los directorios correspondientes
-#         for path in train_paths:
-#             dest_path = os.path.join(train_dir, category, os.path.basename(path))
-#             shutil.copy(path, dest_path)
+        # Copiar imágenes a los directorios correspondientes
+        for path in train_paths:
+            dest_path = os.path.join(train_dir, category, os.path.basename(path))
+            shutil.copy(path, dest_path)
         
-#         for path in val_paths:
-#             dest_path = os.path.join(val_dir, category, os.path.basename(path))
-#             shutil.copy(path, dest_path)
+        for path in val_paths:
+            dest_path = os.path.join(val_dir, category, os.path.basename(path))
+            shutil.copy(path, dest_path)
 
-# # Dividir el conjunto de datos
-# split_dataset(PROCESSED_DIR, TRAIN_DIR, VALIDATION_DIR, split_ratio=0.2)
+# Dividir el conjunto de datos
+split_dataset(PROCESSED_DIR, TRAIN_DIR, VALIDATION_DIR, split_ratio=0.2)
 
 # 2.3 Aumento de datos (Data Augmentation)
 # ---------------------------------------------

@@ -1,143 +1,143 @@
-# Sistema de Detección de Anomalías para Veolia Kruger
+# Anomaly Detection System for Veolia Kruger
 
-Este proyecto implementa un sistema de detección de anomalías en tiempo real para monitorear la salida de lodos ("sludge") en la planta industrial de Veolia Kruger utilizando técnicas de Computer Vision y TensorFlow.
+This project implements a real-time anomaly detection system to monitor sludge output at the Veolia Kruger industrial plant using Computer Vision techniques and TensorFlow.
 
-## Descripción
+## Description
 
-El sistema detecta anomalías en la salida de lodos, como grietas o partes conglomeradas que no son deseables, mediante un modelo de deep learning con fine-tuning. Cuando se detecta una anomalía, el sistema envía alertas a los operadores para que puedan tomar acciones correctivas.
+The system detects anomalies in sludge output, such as cracks or conglomerated parts that are undesirable, using a fine-tuned deep learning model. When an anomaly is detected, the system sends alerts to operators so they can take corrective actions.
 
-## Estructura del Proyecto
+## Project Structure
 
 ```
 veolia_anomaly_detection/
 │
 ├── data/
-│   ├── raw/                # Imágenes originales
-│   ├── processed/          # Imágenes preprocesadas
-│   ├── train/              # Conjunto de entrenamiento
-│   └── validation/         # Conjunto de validación
+│   ├── raw/                # Original images
+│   ├── processed/          # Preprocessed images
+│   ├── train/              # Training dataset
+│   └── validation/         # Validation dataset
 │
 ├── models/
-│   ├── pretrained/         # Modelos pre-entrenados
-│   ├── fine_tuned/         # Modelos después del fine-tuning
-│   └── evaluation_results/ # Resultados de evaluación
+│   ├── pretrained/         # Pre-trained models
+│   ├── fine_tuned/         # Models after fine-tuning
+│   └── evaluation_results/ # Evaluation results
 │
 ├── notebooks/
-│   ├── 01_exploracion_datos.ipynb
-│   ├── 02_preprocesamiento.ipynb
+│   ├── 01_data_exploration.ipynb
+│   ├── 02_preprocessing.ipynb
 │   ├── 03_fine_tuning.ipynb
-│   └── 04_evaluacion.ipynb
+│   └── 04_evaluation.ipynb
 │
 ├── src/
-│   ├── data/               # Funciones para manejo de datos
-│   ├── models/             # Definición y entrenamiento
-│   └── utils/              # Utilidades generales
+│   ├── data/               # Data handling functions
+│   ├── models/             # Model definition and training
+│   └── utils/              # General utilities
 │
 ├── inference/
-│   ├── realtime_detection.py  # Script para detección en tiempo real
-│   └── alert_system.py        # Sistema de alertas
+│   ├── realtime_detection.py  # Script for real-time detection
+│   └── alert_system.py        # Alert system
 │
-├── requirements.txt        # Dependencias
-└── README.md               # Documentación
+├── requirements.txt        # Dependencies
+└── README.md               # Documentation
 ```
 
-## Requisitos
+## Requirements
 
 - Python 3.7+
 - TensorFlow 2.4+ 
 - OpenCV 4.5+
-- Otras dependencias listadas en `requirements.txt`
+- Other dependencies listed in `requirements.txt`
 
-## Instalación
+## Installation
 
-1. Clonar el repositorio:
+1. Clone the repository:
    ```
    git clone https://github.com/veolia-kruger/anomaly-detection.git
    cd anomaly-detection
    ```
 
-2. Crear y activar un entorno virtual:
+2. Create and activate a virtual environment:
    ```
    python -m venv venv
-   source venv/bin/activate  # En Windows: venv\Scripts\activate
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
 
-3. Instalar dependencias:
+3. Install dependencies:
    ```
    pip install -r requirements.txt
    ```
 
-## Flujo de Trabajo
+## Workflow
 
-### 1. Exploración de Datos
+### 1. Data Exploration
 
-El notebook `01_exploracion_datos.ipynb` permite explorar y visualizar las imágenes para comprender mejor las características de las muestras normales y anómalas.
+The notebook `01_data_exploration.ipynb` allows you to explore and visualize the images to better understand the characteristics of normal and anomalous samples.
 
-### 2. Preprocesamiento
+### 2. Preprocessing
 
-El notebook `02_preprocesamiento.ipynb` realiza el preprocesamiento de las imágenes, incluyendo redimensionamiento, normalización y división en conjuntos de entrenamiento y validación.
+The notebook `02_preprocessing.ipynb` performs image preprocessing, including resizing, normalization, and splitting into training and validation sets.
 
-### 3. Entrenamiento y Fine-Tuning
+### 3. Training and Fine-Tuning
 
-El notebook `03_fine_tuning.ipynb` implementa el fine-tuning de un modelo pre-entrenado (como EfficientNetB0, MobileNetV2 o ResNet50) para adaptarlo a la detección de anomalías específicas.
+The notebook `03_fine_tuning.ipynb` implements fine-tuning of a pre-trained model (such as EfficientNetB0, MobileNetV2, or ResNet50) to adapt it to the detection of specific anomalies.
 
-### 4. Evaluación
+### 4. Evaluation
 
-El notebook `04_evaluacion.ipynb` evalúa el rendimiento del modelo mediante métricas como precisión, recall, curvas ROC, y análisis de umbrales óptimos.
+The notebook `04_evaluation.ipynb` evaluates the model's performance using metrics such as precision, recall, ROC curves, and optimal threshold analysis.
 
-### 5. Detección en Tiempo Real
+### 5. Real-Time Detection
 
-El script `realtime_detection.py` implementa la detección en tiempo real utilizando el modelo entrenado. Puede procesar video de una cámara en vivo o de un archivo de video.
+The `realtime_detection.py` script implements real-time detection using the trained model. It can process video from a live camera or a video file.
 
 ```bash
-# Ejemplo de uso con webcam
+# Example usage with webcam
 python inference/realtime_detection.py --source 0
 
-# Ejemplo con stream RTSP
-python inference/realtime_detection.py --source rtsp://ejemplo.com/stream
+# Example with RTSP stream
+python inference/realtime_detection.py --source rtsp://example.com/stream
 
-# Ejemplo con archivo de video
+# Example with video file
 python inference/realtime_detection.py --source video.mp4
 
-# Personalizar umbral de detección
+# Customize detection threshold
 python inference/realtime_detection.py --source 0 --threshold 0.75
 
-# Activar sistema de alertas
+# Activate alert system
 python inference/realtime_detection.py --source 0 --alerts
 ```
 
-## Sistema de Alertas
+## Alert System
 
-El módulo `alert_system.py` proporciona funcionalidades para notificar cuando se detecta una anomalía. Admite múltiples métodos de notificación:
+The `alert_system.py` module provides functionalities to notify when an anomaly is detected. It supports multiple notification methods:
 
-- Registro local de eventos
-- Notificaciones por correo electrónico
-- Mensajes de texto (SMS)
-- Notificaciones push
-- Integración con sistemas de gestión de Veolia Kruger
+- Local event logging
+- Email notifications
+- Text messages (SMS)
+- Push notifications
+- Integration with Veolia Kruger management systems
 
-Para configurar el sistema de alertas:
+To configure the alert system:
 
 ```bash
-# Crear archivo de configuración de ejemplo
+# Create an example configuration file
 python inference/alert_system.py --create-config
 
-# Editar el archivo resultante (alert_config.json) con tus credenciales
+# Edit the resulting file (alert_config.json) with your credentials
 ```
 
-## Personalización del Modelo
+## Model Customization
 
-Para personalizar el modelo para una aplicación específica:
+To customize the model for a specific application:
 
-1. Recopila imágenes representativas de condiciones normales y anómalas.
-2. Organízalas en las carpetas `data/raw/normal` y `data/raw/anomaly`.
-3. Ejecuta los notebooks del 1 al 4 para entrenar y evaluar tu modelo personalizado.
-4. Utiliza el modelo resultante con el script de detección en tiempo real.
+1. Collect representative images of normal and anomalous conditions.
+2. Organize them in the `data/raw/normal` and `data/raw/anomaly` folders.
+3. Run notebooks 1 through 4 to train and evaluate your custom model.
+4. Use the resulting model with the real-time detection script.
 
-## Contribuciones
+## Contributions
 
-Las contribuciones son bienvenidas. Para cambios importantes, por favor abre primero un issue para discutir lo que te gustaría cambiar.
+Contributions are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
-## Licencia
+## License
 
 [MIT](https://choosealicense.com/licenses/mit/)
