@@ -4,10 +4,11 @@
         224
     ],
     "batch_size": 32,
-    "train_samples": 4745,
-    "validation_samples": 1187,
-    "steps_per_epoch": 148,
-    "validation_steps": 37,
+    "train_samples": 4151,
+    "validation_samples": 889,
+    "test_samples": 892,
+    "steps_per_epoch": 129,
+    "validation_steps": 27,
     "class_indices": {
         "anomaly": 0,
         "normal": 1

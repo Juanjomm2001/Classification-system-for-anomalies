@@ -1,4 +1,4 @@
-#preprocesado sin tener en cuenta el resize y todo eso.
+#2 reprocesado sin tener en cuenta el resize y todo eso.
 
 import os
 import numpy as np
@@ -20,9 +20,11 @@ tf.random.set_seed(42)
 RAW_DATA_DIR = '../project3_claud/data/raw/'
 TRAIN_DIR = '../project3_claud/data/train/'
 VALIDATION_DIR = '../project3_claud/data/validation/'
+TEST_DIR = '../project3_claud/data/test/'
 
-# Crear directorios para train y validation si no existen
-for directory in [TRAIN_DIR, VALIDATION_DIR]:
+
+# Modificar donde se crean los directorios
+for directory in [TRAIN_DIR, VALIDATION_DIR, TEST_DIR]:  # Añadir TEST_DIR
     os.makedirs(directory, exist_ok=True)
     os.makedirs(os.path.join(directory, 'normal'), exist_ok=True)
     os.makedirs(os.path.join(directory, 'anomaly'), exist_ok=True)
@@ -173,18 +175,20 @@ load_and_show_examples(RAW_DATA_DIR, num_examples=4)
 # 3. División en conjuntos de entrenamiento y validación
 # ---------------------------------------------
 
-def split_dataset(raw_dir, train_dir, val_dir, split_ratio=0.2):
+def split_dataset(raw_dir, train_dir, val_dir, test_dir, train_ratio=0.7, val_ratio=0.15):
     """
-    Divide el conjunto de datos en entrenamiento y validación.
-    Solo copia los archivos, sin hacer ningún tipo de preprocesamiento.
+    Divide el conjunto de datos en entrenamiento, validación y prueba.
     
     Args:
         raw_dir: Directorio con imágenes originales
         train_dir: Directorio para el conjunto de entrenamiento
         val_dir: Directorio para el conjunto de validación
-        split_ratio: Proporción del conjunto de validación
+        test_dir: Directorio para el conjunto de prueba
+        train_ratio: Proporción del conjunto de entrenamiento (por defecto 70%)
+        val_ratio: Proporción del conjunto de validación (por defecto 15%)
+        (implícitamente, test_ratio = 1 - train_ratio - val_ratio)
     """
-    split_stats = {'train': {}, 'validation': {}}
+    split_stats = {'train': {}, 'validation': {}, 'test': {}}
     
     # Procesar cada categoría (normal y anomalía)
     for category in ['normal', 'anomaly']:
@@ -200,29 +204,47 @@ def split_dataset(raw_dir, train_dir, val_dir, split_ratio=0.2):
             print(f"No se encontraron imágenes para la categoría {category}")
             continue
         
-        # Dividir en entrenamiento y validación
-        train_paths, val_paths = train_test_split(
-            image_paths, test_size=split_ratio, random_state=42
-        )
+        # Barajar las imágenes para asegurar distribución aleatoria
+        np.random.shuffle(image_paths)
+        
+        # Calcular cantidad para cada conjunto
+        total_images = len(image_paths)
+        train_size = int(total_images * train_ratio)
+        val_size = int(total_images * val_ratio)
+        
+        # Dividir en tres conjuntos
+        train_paths = image_paths[:train_size]
+        val_paths = image_paths[train_size:train_size + val_size]
+        test_paths = image_paths[train_size + val_size:]
         
         split_stats['train'][category] = len(train_paths)
         split_stats['validation'][category] = len(val_paths)
+        split_stats['test'][category] = len(test_paths)
         
         # Copiar imágenes a los directorios correspondientes
         print(f"Copiando imágenes de {category}...")
+        
+        # Entrenamiendo
         for path in tqdm(train_paths):
             dest_path = os.path.join(train_dir, category, os.path.basename(path))
             shutil.copy(path, dest_path)
         
+        # Validación
         for path in tqdm(val_paths):
             dest_path = os.path.join(val_dir, category, os.path.basename(path))
+            shutil.copy(path, dest_path)
+            
+        # Prueba (nuevo)
+        for path in tqdm(test_paths):
+            dest_path = os.path.join(test_dir, category, os.path.basename(path))
             shutil.copy(path, dest_path)
     
     return split_stats
 
-# Dividir el conjunto de datos
-print("\nDividiendo el dataset en entrenamiento y validación...")
-split_stats = split_dataset(RAW_DATA_DIR, TRAIN_DIR, VALIDATION_DIR, split_ratio=0.2)
+# Dividir el conjunto de datos en tres partes
+print("\nDividiendo el dataset en entrenamiento, validación y prueba...")
+split_stats = split_dataset(RAW_DATA_DIR, TRAIN_DIR, VALIDATION_DIR, TEST_DIR, 
+                          train_ratio=0.7, val_ratio=0.15)
 
 # Mostrar resultados de la división
 print("\n--- Resultados de la División ---")
@@ -235,6 +257,11 @@ print("\nConjunto de validación:")
 print(f"- Normal: {split_stats['validation'].get('normal', 0)} imágenes")
 print(f"- Anomalía: {split_stats['validation'].get('anomaly', 0)} imágenes")
 print(f"- Total: {sum(split_stats['validation'].values())} imágenes")
+
+print("\nConjunto de prueba:")  # Nuevo
+print(f"- Normal: {split_stats['test'].get('normal', 0)} imágenes")
+print(f"- Anomalía: {split_stats['test'].get('anomaly', 0)} imágenes")
+print(f"- Total: {sum(split_stats['test'].values())} imágenes")
 
 # ---------------------------------------------
 # 4. Guardar configuración para fine-tuning
@@ -252,11 +279,13 @@ steps_per_epoch = train_total // BATCH_SIZE
 validation_steps = val_total // BATCH_SIZE
 
 # Crear un diccionario con la configuración para fine-tuning
+# En la parte donde creas el diccionario de configuración
 config = {
     'image_size': IMG_SIZE,
     'batch_size': BATCH_SIZE,
-    'train_samples': train_total,
-    'validation_samples': val_total,
+    'train_samples': sum(split_stats['train'].values()),
+    'validation_samples': sum(split_stats['validation'].values()),
+    'test_samples': sum(split_stats['test'].values()),  # Nuevo
     'steps_per_epoch': steps_per_epoch,
     'validation_steps': validation_steps,
     'class_indices': {'anomaly': 0, 'normal': 1},
@@ -270,7 +299,6 @@ config = {
         'fill_mode': 'nearest'
     }
 }
-
 # Guardar la configuración como JSON
 import json
 os.makedirs('../project3_claud/data/processed/', exist_ok=True)

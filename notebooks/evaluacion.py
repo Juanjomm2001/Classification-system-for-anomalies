@@ -22,7 +22,9 @@ import itertools
 # tf.random.set_seed(42)
 
 # Definir rutas
+# Definir rutas
 VALIDATION_DIR = '../project3_claud/data/validation/'
+TEST_DIR = '../project3_claud/data/test/'  # Nuevo
 FINE_TUNED_DIR = '../project3_claud/models/fine_tuned/'
 RESULTS_DIR = '../project3_claud/models/evaluation_results/'
 
@@ -128,7 +130,7 @@ def predict_with_custom_threshold(model, image_path, threshold=best_threshold):
     return class_name, prediction
 
 # Probar la función con una imagen de ejemplo
-example_anomaly_path = glob.glob(os.path.join(VALIDATION_DIR, 'anomaly', '*'))[0]
+example_anomaly_path = glob.glob(os.path.join(TEST_DIR, 'anomaly', '*'))[0]
 class_name, prediction = predict_with_custom_threshold(model, example_anomaly_path, threshold=best_threshold)
 print(f"Ejemplo - Clase: {class_name}, Probabilidad: {prediction:.4f}")
 
@@ -139,23 +141,23 @@ print(f"Ejemplo - Clase: {class_name}, Probabilidad: {prediction:.4f}")
 input_shape = model.input_shape[1:3]
 print(f"Tamaño de entrada del modelo: {input_shape}")
 
-# Generador para datos de validación
-val_datagen = ImageDataGenerator(rescale=1./255)  # ¡Importante! Mismo rescale que en entrenamiento
+# Generador para datos de prueba (en lugar de validación)
+test_datagen = ImageDataGenerator(rescale=1./255)
 
-validation_generator = val_datagen.flow_from_directory(
-    VALIDATION_DIR,
+test_generator = test_datagen.flow_from_directory(
+    TEST_DIR,  # Usar TEST_DIR en lugar de VALIDATION_DIR
     target_size=input_shape,
-    batch_size=1,  # Tamaño de lote 1 para procesar imágenes una por una
+    batch_size=1,
     class_mode='binary',
-    shuffle=False   # Importante: No mezclar para mantener el orden
+    shuffle=False
 )
 
 # 4.4 Evaluación del modelo
 # ---------------------------------------------
 
-# Evaluar el modelo en el conjunto de validación
-print("Evaluando modelo en conjunto de validación...")
-evaluation = model.evaluate(validation_generator, verbose=1)
+# Evaluar el modelo en el conjunto de prueba
+print("Evaluando modelo en conjunto de prueba...")
+evaluation = model.evaluate(test_generator, verbose=1)
 
 # Mostrar resultados de la evaluación
 metrics = model.metrics_names
@@ -171,10 +173,10 @@ for metric, value in evaluation_results.items():
 print("Generando predicciones para todas las imágenes...")
 
 # Restablecer el generador
-validation_generator.reset()
+test_generator.reset()
 
 # Número total de muestras
-n_samples = validation_generator.samples
+n_samples = test_generator.samples
 
 # Arreglos para almacenar predicciones y etiquetas reales
 y_true = np.zeros(n_samples, dtype=int)
@@ -184,7 +186,7 @@ y_pred_binary = np.zeros(n_samples, dtype=int)
 # Procesar todas las muestras
 for i in tqdm(range(n_samples)):
     # Obtener una muestra
-    x, y = next(validation_generator)
+    x, y = next(test_generator)
     # Almacenar etiqueta real
     y_true[i] = int(y[0])
     # Generar predicción
@@ -455,12 +457,12 @@ def show_misclassified(generator, indices, y_pred, idx_to_class, title, threshol
 # Visualizar falsos positivos (máximo 10)
 fp_indices = false_positives[:10]
 if len(fp_indices) > 0:
-    show_misclassified(validation_generator, fp_indices, y_pred, idx_to_class, "Falsos Positivos")
+    show_misclassified(test_generator, fp_indices, y_pred, idx_to_class, "Falsos Positivos")
 
 # Visualizar falsos negativos (máximo 10)
 fn_indices = false_negatives[:10]
 if len(fn_indices) > 0:
-    show_misclassified(validation_generator, fn_indices, y_pred, idx_to_class, "Falsos Negativos")
+    show_misclassified(test_generator, fn_indices, y_pred, idx_to_class, "Falsos Negativos")
 
 # 4.10 Resumen de la evaluación
 # ---------------------------------------------
