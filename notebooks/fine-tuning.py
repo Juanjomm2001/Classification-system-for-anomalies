@@ -164,6 +164,18 @@ def build_model(base_model_name='EfficientNetB0', input_shape=(224, 224, 3),
     if base_model_name == 'MobileNetV2':
         base_model = MobileNetV2(weights='imagenet', include_top=False, 
                                input_shape=input_shape)
+        #######################################
+    # Nuevo modeloa probar
+    elif base_model_name == 'MobileNetV3Small':
+        base_model =tf.keras.applications.MobileNetV3Small(input_shape=input_shape,
+        include_top=False,
+        weights='imagenet')
+         # Nuevo modeloa probar
+    elif base_model_name == 'MobileNetV3Large':
+        base_model =tf.keras.applications.MobileNetV3Large(input_shape=input_shape,
+        include_top=False,
+        weights='imagenet')
+##############################################
     elif base_model_name == 'ResNet50':
         base_model = ResNet50(weights='imagenet', include_top=False, 
                             input_shape=input_shape)
